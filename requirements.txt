@@ -1,0 +1,7 @@
+aiohttp
+asyncio
+fastapi
+uvicorn
+jinja2
+pandas
+tenacity

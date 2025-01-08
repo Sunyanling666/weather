@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Weather</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #weather-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1>City Weather</h1>
+<button onclick="updateWeather()">Update</button>
+<button onclick="resetCities()">Reset Cities</button>
+<form id="add-city-form">
+    <input type="text" id="city-name" placeholder="City Name" required>
+    <input type="text" id="latitude" placeholder="Latitude" required>
+    <input type="text" id="longitude" placeholder="Longitude" required>
+    <button type="submit">Add City</button>
+</form>
+<div id="weather-container"></div>
+<script>
+    async function updateWeather() {
+        const response = await fetch('/weather');
+        const data = await response.json();
+        const container = document.getElementById('weather-container');
+        container.innerHTML = '';
+        data.forEach(cityWeather => {
+            const p = document.createElement('p');
+            p.textContent = `${cityWeather.city}: ${cityWeather.temperature}°C`;
+            container.appendChild(p);
+        });
+    }
+
+    async function addCity(event) {
+        event.preventDefault();
+        const cityName = document.getElementById('city-name').value;
+        const latitude = document.getElementById('latitude').value;
+        const longitude = document.getElementById('longitude').value;
+        const response = await fetch('/add_city', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ capital: cityName, latitude: latitude, longitude: longitude })
+        });
+        const result = await response.json();
+        alert(result.message);
+        updateWeather();
+    }
+
+    async function removeCity(cityName) {
+        const response = await fetch('/remove_city', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ city_name: cityName })
+        });
+        const result = await response.json();
+        alert(result.message);
+        updateWeather();
+    }
+
+    async function resetCities() {
+        const response = await fetch('/reset_cities', {
+            method: 'POST'
+        });
+        const result = await response.json();
+        alert(result.message);
+        updateWeather();
+    }
+
+    document.getElementById('add-city-form').addEventListener('submit', addCity);
+</script>
+</body>
+</html>
